@@ -1,5 +1,5 @@
 # Lexeis Solver
-A small program written in Visual Basic (.NET Framework 4.5), that gives all possible Greek words for board games like Wordz by Fugo Games, or Wordament by Microsoft
+A small program written in Visual Basic (.NET Framework 4.5), that gives all possible Greek words for board game Boggle and the various versions of it (like Words by Fugo Games or Wordament by Microsoft)
 
 ## About the word games this program targets
 In these games, you get a 4x4 grid of letters, and you have to form words three letters or more long, by starting on a tile and continuing to an adjacent tile, vertically, horizontally or diagonally.
