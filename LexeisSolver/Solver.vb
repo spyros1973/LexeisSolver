@@ -28,7 +28,7 @@
         End Set
     End Property
 
-    Private Function validMoves(route As ArrayList) As ArrayList
+    Private Function ValidMoves(route As ArrayList) As ArrayList
         Dim current As Integer = route.Item(route.Count - 1)
         Dim valid As New ArrayList
         Select Case current
@@ -103,7 +103,7 @@
         Return valid
     End Function
 
-    Private Sub checkRoute(currentRoute As ArrayList)
+    Private Sub CheckRoute(currentRoute As ArrayList)
         Dim word As String = ""
         'System.Diagnostics.Debug.WriteLine(writeRoute(currentRoute))
 
@@ -124,20 +124,20 @@
 
         If Not _dictionary.ContainsWordsThatStartWith(word) Then Exit Sub
 
-        Dim moves As ArrayList = validMoves(currentRoute)
+        Dim moves As ArrayList = ValidMoves(currentRoute)
 
 
         Do While moves.Count > 0
             If currentRoute.Count < _maxLength Then
                 currentRoute.Add(moves.Item(0))
-                checkRoute(currentRoute)
+                CheckRoute(currentRoute)
                 currentRoute.RemoveAt(currentRoute.Count - 1)
             End If
             moves.RemoveAt(0)
         Loop
     End Sub
 
-    Private Function writeRoute(route As ArrayList) As String
+    Private Function WriteRoute(route As ArrayList) As String
         Dim s As String = ""
         For Each i As Integer In route
             s = s & i.ToString & ","
@@ -147,11 +147,10 @@
     End Function
 
     Public Sub Solve()
-
         For i As Integer = 1 To 16
             Dim r As New ArrayList
             r.Add(i)
-            checkRoute(r)
+            CheckRoute(r)
         Next
     End Sub
 
