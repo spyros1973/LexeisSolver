@@ -56,7 +56,7 @@
         btnSortWordList.Tag = 0
         lblStatus.Text = "Reading dictionary..."
         Await Task.Run(Sub()
-                           _dict = New SolverDictionary
+                           _dict = New SolverDictionary("gr")
                        End Sub)
         lblStatus.Text = _dict.NumberOfWords & " words read"
     End Sub

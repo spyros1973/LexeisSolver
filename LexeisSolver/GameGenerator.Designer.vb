@@ -24,18 +24,21 @@ Partial Class GameGenerator
     Private Sub InitializeComponent()
         Me.btnGenerate = New System.Windows.Forms.Button()
         Me.GroupBox1 = New System.Windows.Forms.GroupBox()
-        Me.Label1 = New System.Windows.Forms.Label()
-        Me.Label2 = New System.Windows.Forms.Label()
-        Me.Label3 = New System.Windows.Forms.Label()
-        Me.txtOutputPath = New System.Windows.Forms.TextBox()
-        Me.Button1 = New System.Windows.Forms.Button()
-        Me.numGames = New System.Windows.Forms.NumericUpDown()
         Me.numWordThreshold = New System.Windows.Forms.NumericUpDown()
+        Me.numGames = New System.Windows.Forms.NumericUpDown()
+        Me.Button1 = New System.Windows.Forms.Button()
+        Me.txtOutputPath = New System.Windows.Forms.TextBox()
+        Me.Label3 = New System.Windows.Forms.Label()
+        Me.Label2 = New System.Windows.Forms.Label()
+        Me.Label1 = New System.Windows.Forms.Label()
         Me.txtOut = New System.Windows.Forms.TextBox()
         Me.prg = New System.Windows.Forms.ProgressBar()
+        Me.numMinLongestWordLength = New System.Windows.Forms.NumericUpDown()
+        Me.Label4 = New System.Windows.Forms.Label()
         Me.GroupBox1.SuspendLayout()
-        CType(Me.numGames, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.numWordThreshold, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.numGames, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.numMinLongestWordLength, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
         'btnGenerate
@@ -49,6 +52,8 @@ Partial Class GameGenerator
         '
         'GroupBox1
         '
+        Me.GroupBox1.Controls.Add(Me.numMinLongestWordLength)
+        Me.GroupBox1.Controls.Add(Me.Label4)
         Me.GroupBox1.Controls.Add(Me.numWordThreshold)
         Me.GroupBox1.Controls.Add(Me.numGames)
         Me.GroupBox1.Controls.Add(Me.Button1)
@@ -63,39 +68,25 @@ Partial Class GameGenerator
         Me.GroupBox1.TabStop = False
         Me.GroupBox1.Text = "Generation parameters"
         '
-        'Label1
+        'numWordThreshold
         '
-        Me.Label1.AutoSize = True
-        Me.Label1.Location = New System.Drawing.Point(16, 27)
-        Me.Label1.Name = "Label1"
-        Me.Label1.Size = New System.Drawing.Size(63, 13)
-        Me.Label1.TabIndex = 0
-        Me.Label1.Text = "Output path"
+        Me.numWordThreshold.Location = New System.Drawing.Point(135, 90)
+        Me.numWordThreshold.Maximum = New Decimal(New Integer() {15, 0, 0, 0})
+        Me.numWordThreshold.Minimum = New Decimal(New Integer() {1, 0, 0, 0})
+        Me.numWordThreshold.Name = "numWordThreshold"
+        Me.numWordThreshold.Size = New System.Drawing.Size(64, 20)
+        Me.numWordThreshold.TabIndex = 6
+        Me.numWordThreshold.Value = New Decimal(New Integer() {1, 0, 0, 0})
         '
-        'Label2
+        'numGames
         '
-        Me.Label2.AutoSize = True
-        Me.Label2.Location = New System.Drawing.Point(16, 65)
-        Me.Label2.Name = "Label2"
-        Me.Label2.Size = New System.Drawing.Size(90, 13)
-        Me.Label2.TabIndex = 1
-        Me.Label2.Text = "Number of games"
-        '
-        'Label3
-        '
-        Me.Label3.AutoSize = True
-        Me.Label3.Location = New System.Drawing.Point(16, 103)
-        Me.Label3.Name = "Label3"
-        Me.Label3.Size = New System.Drawing.Size(79, 13)
-        Me.Label3.TabIndex = 2
-        Me.Label3.Text = "Word threshold"
-        '
-        'txtOutputPath
-        '
-        Me.txtOutputPath.Location = New System.Drawing.Point(135, 27)
-        Me.txtOutputPath.Name = "txtOutputPath"
-        Me.txtOutputPath.Size = New System.Drawing.Size(352, 20)
-        Me.txtOutputPath.TabIndex = 3
+        Me.numGames.Location = New System.Drawing.Point(135, 57)
+        Me.numGames.Maximum = New Decimal(New Integer() {1000, 0, 0, 0})
+        Me.numGames.Minimum = New Decimal(New Integer() {1, 0, 0, 0})
+        Me.numGames.Name = "numGames"
+        Me.numGames.Size = New System.Drawing.Size(64, 20)
+        Me.numGames.TabIndex = 5
+        Me.numGames.Value = New Decimal(New Integer() {1, 0, 0, 0})
         '
         'Button1
         '
@@ -107,25 +98,39 @@ Partial Class GameGenerator
         Me.Button1.Text = "..."
         Me.Button1.UseVisualStyleBackColor = True
         '
-        'numGames
+        'txtOutputPath
         '
-        Me.numGames.Location = New System.Drawing.Point(135, 63)
-        Me.numGames.Maximum = New Decimal(New Integer() {1000, 0, 0, 0})
-        Me.numGames.Minimum = New Decimal(New Integer() {1, 0, 0, 0})
-        Me.numGames.Name = "numGames"
-        Me.numGames.Size = New System.Drawing.Size(64, 20)
-        Me.numGames.TabIndex = 5
-        Me.numGames.Value = New Decimal(New Integer() {1, 0, 0, 0})
+        Me.txtOutputPath.Location = New System.Drawing.Point(135, 27)
+        Me.txtOutputPath.Name = "txtOutputPath"
+        Me.txtOutputPath.Size = New System.Drawing.Size(352, 20)
+        Me.txtOutputPath.TabIndex = 3
         '
-        'numWordThreshold
+        'Label3
         '
-        Me.numWordThreshold.Location = New System.Drawing.Point(135, 96)
-        Me.numWordThreshold.Maximum = New Decimal(New Integer() {15, 0, 0, 0})
-        Me.numWordThreshold.Minimum = New Decimal(New Integer() {1, 0, 0, 0})
-        Me.numWordThreshold.Name = "numWordThreshold"
-        Me.numWordThreshold.Size = New System.Drawing.Size(64, 20)
-        Me.numWordThreshold.TabIndex = 6
-        Me.numWordThreshold.Value = New Decimal(New Integer() {1, 0, 0, 0})
+        Me.Label3.AutoSize = True
+        Me.Label3.Location = New System.Drawing.Point(16, 93)
+        Me.Label3.Name = "Label3"
+        Me.Label3.Size = New System.Drawing.Size(79, 13)
+        Me.Label3.TabIndex = 2
+        Me.Label3.Text = "Word threshold"
+        '
+        'Label2
+        '
+        Me.Label2.AutoSize = True
+        Me.Label2.Location = New System.Drawing.Point(16, 59)
+        Me.Label2.Name = "Label2"
+        Me.Label2.Size = New System.Drawing.Size(90, 13)
+        Me.Label2.TabIndex = 1
+        Me.Label2.Text = "Number of games"
+        '
+        'Label1
+        '
+        Me.Label1.AutoSize = True
+        Me.Label1.Location = New System.Drawing.Point(16, 27)
+        Me.Label1.Name = "Label1"
+        Me.Label1.Size = New System.Drawing.Size(63, 13)
+        Me.Label1.TabIndex = 0
+        Me.Label1.Text = "Output path"
         '
         'txtOut
         '
@@ -146,6 +151,25 @@ Partial Class GameGenerator
         Me.prg.TabIndex = 3
         Me.prg.Visible = False
         '
+        'numMinLongestWordLength
+        '
+        Me.numMinLongestWordLength.Location = New System.Drawing.Point(458, 90)
+        Me.numMinLongestWordLength.Maximum = New Decimal(New Integer() {15, 0, 0, 0})
+        Me.numMinLongestWordLength.Minimum = New Decimal(New Integer() {1, 0, 0, 0})
+        Me.numMinLongestWordLength.Name = "numMinLongestWordLength"
+        Me.numMinLongestWordLength.Size = New System.Drawing.Size(64, 20)
+        Me.numMinLongestWordLength.TabIndex = 8
+        Me.numMinLongestWordLength.Value = New Decimal(New Integer() {1, 0, 0, 0})
+        '
+        'Label4
+        '
+        Me.Label4.AutoSize = True
+        Me.Label4.Location = New System.Drawing.Point(305, 92)
+        Me.Label4.Name = "Label4"
+        Me.Label4.Size = New System.Drawing.Size(143, 13)
+        Me.Label4.TabIndex = 7
+        Me.Label4.Text = "Minimum longest word length"
+        '
         'GameGenerator
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
@@ -162,8 +186,9 @@ Partial Class GameGenerator
         Me.Text = "Game Generator"
         Me.GroupBox1.ResumeLayout(False)
         Me.GroupBox1.PerformLayout()
-        CType(Me.numGames, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.numWordThreshold, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.numGames, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.numMinLongestWordLength, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
@@ -180,4 +205,6 @@ Partial Class GameGenerator
     Friend WithEvents Label1 As Label
     Friend WithEvents txtOut As TextBox
     Friend WithEvents prg As ProgressBar
+    Friend WithEvents numMinLongestWordLength As NumericUpDown
+    Friend WithEvents Label4 As Label
 End Class

@@ -1,5 +1,4 @@
 ﻿Imports System.Web.Script.Serialization
-Imports System.Windows.Forms.VisualStyles.VisualStyleElement
 
 Public Class GameGenerator
     Private Class Level
@@ -63,6 +62,7 @@ Public Class GameGenerator
         End If
         Dim numberOfGames As Integer = numGames.Value
         Dim minimumWords As Integer = numWordThreshold.Value
+        Dim minimumLongestWordLength As Integer = numMinLongestWordLength.Value
         prg.Visible = True
         btnGenerate.Enabled = False
         prg.Minimum = 0
@@ -70,12 +70,12 @@ Public Class GameGenerator
         prg.Value = 0
         My.Settings.GameOutputPath = txtOutputPath.Text
         Randomize()
-        Dim dict As New SolverDictionary
+        Dim dict As New SolverDictionary("gr")
         Dim gamesCreated As Integer = 0
         txtOut.Text = "Generating " & numGames.Value & " games..." & vbCrLf
         Dim levels As New List(Of Level)
         While gamesCreated < numberOfGames
-            Dim b As Board = Await GenerateGame(minimumWords, dict)
+            Dim b As Board = Await GenerateGame(minimumWords, minimumLongestWordLength, dict)
             If b Is Nothing Then
                 txtOut.Text &= "Game below word threshold - retrying..." & vbCrLf
             Else
@@ -101,16 +101,112 @@ Public Class GameGenerator
         Return x.Points < y.Points
     End Function
 
+    Private Function GetNeighbors(pos As Integer) As List(Of Integer)
+        Dim valid As New List(Of Integer)
+        Select Case pos
+            Case 1
+                valid.Add(2)
+                valid.Add(5)
+                valid.Add(6)
+            Case 2
+                valid.Add(1)
+                valid.Add(3)
+                valid.Add(5)
+                valid.Add(6)
+                valid.Add(7)
+            Case 3
+                valid.Add(2)
+                valid.Add(4)
+                valid.Add(6)
+                valid.Add(7)
+                valid.Add(8)
+            Case 4
+                valid.Add(3)
+                valid.Add(7)
+                valid.Add(8)
+            Case 5
+                valid.Add(1)
+                valid.Add(2)
+                valid.Add(6)
+                valid.Add(9)
+                valid.Add(10)
+            Case 6
+                valid.Add(1)
+                valid.Add(2)
+                valid.Add(3)
+                valid.Add(5)
+                valid.Add(7)
+                valid.Add(9)
+                valid.Add(10)
+                valid.Add(11)
+            Case 7
+                valid.Add(2)
+                valid.Add(3)
+                valid.Add(4)
+                valid.Add(6)
+                valid.Add(8)
+                valid.Add(10)
+                valid.Add(11)
+                valid.Add(12)
+            Case 8
+                valid.AddRange({3, 4, 7, 11, 12})
+            Case 9
+                valid.AddRange({5, 6, 10, 13, 14})
+            Case 10
+                valid.AddRange({5, 6, 7, 9, 11, 13, 14, 15})
+            Case 11
+                valid.AddRange({6, 7, 8, 10, 12, 14, 15, 16})
+            Case 12
+                valid.AddRange({7, 8, 11, 15, 16})
+            Case 13
+                valid.AddRange({9, 10, 14})
+            Case 14
+                valid.AddRange({9, 10, 11, 13, 15})
+            Case 15
+                valid.AddRange({10, 11, 12, 14, 16})
+            Case 16
+                valid.AddRange({11, 12, 15})
+        End Select
+        For i As Integer = 0 To valid.Count - 1
+            valid(i) = valid(i) - 1
+        Next
+        Return valid
+    End Function
 
-    Private Async Function GenerateGame(minimumWords As Integer, dict As SolverDictionary) As Task(Of Board)
+    Private Function IsConsonnant(s As String) As Boolean
+        Return "ΒΓΔΖΘΚΛΜΝΞΠΡΣΤΦΧΨ".Contains(s)
+    End Function
+    Private Async Function GenerateGame(minimumWords As Integer, minimumLongestWordLength As Integer, dict As SolverDictionary) As Task(Of Board)
         Dim ret As Board = Nothing
         Dim boardSetup As String = ""
-        Dim letters As String = "ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩΑΕΣ"
+        Dim letters As String = "ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩΑΕΣΚΠΟΑΕ"
 
-        For i As Integer = 0 To 15
-            Dim idx As Integer = CInt(Rnd() * (letters.Length - 1))
-            boardSetup &= letters.Substring(idx, 1)
-        Next
+        Dim isOk As Boolean = False
+        Do While Not isOk
+            boardSetup = ""
+            For i As Integer = 0 To 15
+                Dim idx As Integer = CInt(Rnd() * (letters.Length - 1))
+                boardSetup &= letters.Substring(idx, 1)
+            Next
+            'boardSetup = "ΜΛΚΚΡΝΞΕΚΓΣΚΔΡΑΒ"
+            isOk = True
+            For i As Integer = 0 To 15
+                'if consonnant, make sure that at least some neighbors are vowels
+                If IsConsonnant(boardSetup.Substring(i, 1)) Then
+                    Dim cc As Integer = 0
+                    Dim ttt As List(Of Integer) = GetNeighbors(i + 1)
+                    For Each neighbor As String In GetNeighbors(i + 1)
+                        If IsConsonnant(boardSetup.Substring(neighbor, 1)) Then cc += 1
+                    Next
+                    If Not (cc < GetNeighbors(i).Count / 2) Then
+                        isOk = False
+                        Exit For
+                    End If
+                End If
+            Next
+        Loop
+        'boardSetup = "ΨΣΠΔΔΘΟΥΥΠΝΠΠΒΠΒ"
+        'boardSetup = "ΨΔΥΠΣΘΠΒΠΟΝΠΔΥΠΒ"
         Dim slv As New Solver(boardSetup, dict)
         slv.MinimumLength = 3
         slv.MaximumLength = 8
@@ -119,13 +215,20 @@ Public Class GameGenerator
                            slv.Solve()
                        End Sub)
 
-        If slv.WordsFound.Count > minimumWords Then
+        Dim longestWordLength As Integer = 0
+        For Each s As String In slv.WordsFound
+            If s.Length > longestWordLength Then longestWordLength = s.Length
+        Next
+
+        If slv.WordsFound.Count > minimumWords And longestWordLength >= minimumLongestWordLength Then
             slv.WordsFound.Sort()
             ret = New Board
+            Dim c As Integer = 0
             For i As Integer = 0 To 3
                 Dim row As New List(Of String)
                 For n As Integer = 0 To 3
-                    row.Add(boardSetup.Substring(i * 3 + n, 1))
+                    row.Add(boardSetup.Substring(c, 1))
+                    c += 1
                 Next
                 ret.Board.Add(row)
             Next

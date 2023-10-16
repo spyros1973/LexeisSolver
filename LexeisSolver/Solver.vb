@@ -8,7 +8,7 @@
 
     Public Sub New(board As String)
         _board = board
-        _dictionary = New SolverDictionary
+        _dictionary = New SolverDictionary("gr")
     End Sub
 
     Public Sub New(board As String, dictionary As SolverDictionary)

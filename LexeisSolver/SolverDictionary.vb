@@ -1,18 +1,31 @@
 ﻿Imports System.IO
 
 Public Class SolverDictionary
-    Private _words(24) As List(Of String)
+    Private _words() As List(Of String)
     Private _alphabet() As Char = "ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ"
     Private _fromReplace() As Char = "άέήίϊΐόύϋΰώΆΈΉΊΌΎΏς"
-    Private _toReplace() As Char = "αεηιιιουυυωαεηιουωσ"    
+    Private _toReplace() As Char = "αεηιιιουυυωαεηιουωσ"
 
-    Public Sub New()
-        For i As Integer = 0 To 23 : _words(i) = New List(Of String) : Next
+    Public Sub New(language As String)
+
+        If language.ToLower = "gr" Then
+            _alphabet = "ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ"
+            _fromReplace = "άέήίϊΐόύϋΰώΆΈΉΊΌΎΏς"
+            _toReplace = "αεηιιιουυυωαεηιουωσ"
+        Else
+            language = "en"
+            _alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            _fromReplace = ""
+            _toReplace = ""
+
+        End If
+        ReDim _words(_alphabet.Length)
+
+        For i As Integer = 0 To _words.Length - 1 : _words(i) = New List(Of String) : Next
         Dim cnt As Integer = 0
-        Dim path As String = IO.Path.Combine(Application.StartupPath, "dict.txt")
+        Dim path As String = IO.Path.Combine(Application.StartupPath, $"dict-{language}.txt")
         If Not IO.File.Exists(path) Then Exit Sub
         Dim entries As String() = File.ReadAllLines(path)
-        'Dim outFile As New IO.StreamWriter(IO.Path.Combine(Application.StartupPath, "dict.txt"), FileMode.CreateNew)
 
         Dim n As Integer = 0
         For Each s As String In entries
@@ -53,7 +66,7 @@ Public Class SolverDictionary
 
     Public Function NumberOfWords() As Integer
         Dim ret As Integer = 0
-        For i As Integer = 0 To 23
+        For i As Integer = 0 To _words.Length - 1
             ret += _words(i).Count
         Next
         Return ret
