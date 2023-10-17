@@ -63,6 +63,8 @@ Public Class GameGenerator
         Dim numberOfGames As Integer = numGames.Value
         Dim minimumWords As Integer = numWordThreshold.Value
         Dim minimumLongestWordLength As Integer = numMinLongestWordLength.Value
+        Dim language As String
+        If cmbLanguage.SelectedIndex = 0 Then language = "gr" Else language = "en"
         prg.Visible = True
         btnGenerate.Enabled = False
         prg.Minimum = 0
@@ -70,12 +72,12 @@ Public Class GameGenerator
         prg.Value = 0
         My.Settings.GameOutputPath = txtOutputPath.Text
         Randomize()
-        Dim dict As New SolverDictionary("gr")
+        Dim dict As New SolverDictionary(language)
         Dim gamesCreated As Integer = 0
         txtOut.Text = "Generating " & numGames.Value & " games..." & vbCrLf
         Dim levels As New List(Of Level)
         While gamesCreated < numberOfGames
-            Dim b As Board = Await GenerateGame(minimumWords, minimumLongestWordLength, dict)
+            Dim b As Board = Await GenerateGame(minimumWords, minimumLongestWordLength, dict, language)
             If b Is Nothing Then
                 txtOut.Text &= "Game below word threshold - retrying..." & vbCrLf
             Else
@@ -176,10 +178,15 @@ Public Class GameGenerator
     Private Function IsConsonnant(s As String) As Boolean
         Return "ΒΓΔΖΘΚΛΜΝΞΠΡΣΤΦΧΨ".Contains(s)
     End Function
-    Private Async Function GenerateGame(minimumWords As Integer, minimumLongestWordLength As Integer, dict As SolverDictionary) As Task(Of Board)
+    Private Async Function GenerateGame(minimumWords As Integer, minimumLongestWordLength As Integer, dict As SolverDictionary, language As String) As Task(Of Board)
         Dim ret As Board = Nothing
         Dim boardSetup As String = ""
-        Dim letters As String = "ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩΑΕΣΚΠΟΑΕ"
+        Dim letters As String
+        If language = "gr" Then
+            letters = "ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩΑΕΣΚΠΟΑΕ"
+        Else
+            letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZAEDBFTHIY"
+        End If
 
         Dim isOk As Boolean = False
         Do While Not isOk
@@ -192,11 +199,11 @@ Public Class GameGenerator
             isOk = True
             For i As Integer = 0 To 15
                 'if consonnant, make sure that at least some neighbors are vowels
-                If IsConsonnant(boardSetup.Substring(i, 1)) Then
+                If dict.IsConsonnant(boardSetup.Substring(i, 1)) Then
                     Dim cc As Integer = 0
                     Dim ttt As List(Of Integer) = GetNeighbors(i + 1)
                     For Each neighbor As String In GetNeighbors(i + 1)
-                        If IsConsonnant(boardSetup.Substring(neighbor, 1)) Then cc += 1
+                        If dict.IsConsonnant(boardSetup.Substring(neighbor, 1)) Then cc += 1
                     Next
                     If Not (cc < GetNeighbors(i).Count / 2) Then
                         isOk = False
@@ -248,5 +255,8 @@ Public Class GameGenerator
 
     Private Sub GameGenerator_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         txtOutputPath.Text = My.Settings.GameOutputPath
+        cmbLanguage.Items.Add("Greek")
+        cmbLanguage.Items.Add("English")
+        cmbLanguage.SelectedIndex = 0
     End Sub
 End Class

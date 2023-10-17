@@ -4,6 +4,7 @@ Public Class SolverDictionary
     Private _words() As List(Of String)
     Private _alphabet() As Char = "ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ"
     Private _fromReplace() As Char = "άέήίϊΐόύϋΰώΆΈΉΊΌΎΏς"
+    Private _consonnants As String = ""
     Private _toReplace() As Char = "αεηιιιουυυωαεηιουωσ"
 
     Public Sub New(language As String)
@@ -12,12 +13,13 @@ Public Class SolverDictionary
             _alphabet = "ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ"
             _fromReplace = "άέήίϊΐόύϋΰώΆΈΉΊΌΎΏς"
             _toReplace = "αεηιιιουυυωαεηιουωσ"
+            _consonnants = "ΒΓΔΖΘΚΛΜΝΞΠΡΣΤΦΧΨ"
         Else
             language = "en"
             _alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
             _fromReplace = ""
             _toReplace = ""
-
+            _consonnants = "BCDFGHJKLMNPQRSTVWXZ"
         End If
         ReDim _words(_alphabet.Length)
 
@@ -45,6 +47,11 @@ Public Class SolverDictionary
             System.Diagnostics.Debug.WriteLine(_alphabet(i) & ": " & _words(i).Count & " words")
         Next
     End Sub
+
+    Public Function IsConsonnant(s As String) As Boolean
+        Return _consonnants.Contains(s)
+    End Function
+
 
     Private Function SanitizeWord(txt As String) As String
         For i As Integer = 0 To _fromReplace.Length - 1
