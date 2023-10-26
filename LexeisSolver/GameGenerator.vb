@@ -185,7 +185,7 @@ Public Class GameGenerator
         If language = "gr" Then
             letters = "ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩΑΕΣΚΠΟΑΕ"
         Else
-            letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZAEDBFTHIY"
+            letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZAEDMFTH"
         End If
 
         Dim isOk As Boolean = False
