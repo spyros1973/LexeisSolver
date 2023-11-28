@@ -1,4 +1,4 @@
-﻿$path="c:\shared\gramma\en"
+﻿$path="c:\shared\gramma\gr"
 
 $myLevels = Get-Content $path\index.txt -Encoding UTF8 -Raw | ConvertFrom-Json | Sort-Object -Property Filename -Descending
 $sortedLevels = $myLevels | Sort-Object -Property Words -Descending
