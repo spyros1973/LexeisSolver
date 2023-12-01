@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.5.33627.172
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31729.503
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "LexeisSolver", "LexeisSolver\LexeisSolver.vbproj", "{957D2E5A-DF71-41D2-A2BD-F833D9BE6A2D}"
+EndProject
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "SolverCLI", "SolverCLI\SolverCLI.vbproj", "{D346C40E-575C-4EE7-B67A-0DD838470EFA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,8 +17,15 @@ Global
 		{957D2E5A-DF71-41D2-A2BD-F833D9BE6A2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{957D2E5A-DF71-41D2-A2BD-F833D9BE6A2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{957D2E5A-DF71-41D2-A2BD-F833D9BE6A2D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D346C40E-575C-4EE7-B67A-0DD838470EFA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D346C40E-575C-4EE7-B67A-0DD838470EFA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D346C40E-575C-4EE7-B67A-0DD838470EFA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D346C40E-575C-4EE7-B67A-0DD838470EFA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D1461C79-69A9-4DBB-8A5C-81FF842B2CF6}
 	EndGlobalSection
 EndGlobal

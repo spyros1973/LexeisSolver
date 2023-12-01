@@ -7,12 +7,12 @@ Write-Host "Reading files"
 Write-Host "$($myLevels.length) files read"
 
 Write-Host "Outputting js"
-$result="var levels=[];"
+$result="var levels_gr=[];"
 $i=0
 foreach ($f in $sortedLevels ) {
     #Write-Host "$($f.Filename) has $($f.Words) words and $($f.Points) points"
     $file=Get-Content -Path $path\$($f.Filename) -Encoding UTF8
-    $result += "levels.push($($file));`r`n"
+    $result += "levels_gr.push($($file));`r`n"
 }
 
 # $files = Get-Childitem -Path $path -Filter *.json -File -Recurse -ErrorAction SilentlyContinue
