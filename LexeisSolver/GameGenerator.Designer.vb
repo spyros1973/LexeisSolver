@@ -24,6 +24,8 @@ Partial Class GameGenerator
     Private Sub InitializeComponent()
         Me.btnGenerate = New System.Windows.Forms.Button()
         Me.GroupBox1 = New System.Windows.Forms.GroupBox()
+        Me.Label5 = New System.Windows.Forms.Label()
+        Me.cmbLanguage = New System.Windows.Forms.ComboBox()
         Me.numMinLongestWordLength = New System.Windows.Forms.NumericUpDown()
         Me.Label4 = New System.Windows.Forms.Label()
         Me.numWordThreshold = New System.Windows.Forms.NumericUpDown()
@@ -35,12 +37,13 @@ Partial Class GameGenerator
         Me.Label1 = New System.Windows.Forms.Label()
         Me.txtOut = New System.Windows.Forms.TextBox()
         Me.prg = New System.Windows.Forms.ProgressBar()
-        Me.cmbLanguage = New System.Windows.Forms.ComboBox()
-        Me.Label5 = New System.Windows.Forms.Label()
+        Me.numMinWordTimes = New System.Windows.Forms.NumericUpDown()
+        Me.Label6 = New System.Windows.Forms.Label()
         Me.GroupBox1.SuspendLayout()
         CType(Me.numMinLongestWordLength, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.numWordThreshold, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.numGames, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.numMinWordTimes, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
         'btnGenerate
@@ -54,6 +57,8 @@ Partial Class GameGenerator
         '
         'GroupBox1
         '
+        Me.GroupBox1.Controls.Add(Me.Label6)
+        Me.GroupBox1.Controls.Add(Me.numMinWordTimes)
         Me.GroupBox1.Controls.Add(Me.Label5)
         Me.GroupBox1.Controls.Add(Me.cmbLanguage)
         Me.GroupBox1.Controls.Add(Me.numMinLongestWordLength)
@@ -72,20 +77,38 @@ Partial Class GameGenerator
         Me.GroupBox1.TabStop = False
         Me.GroupBox1.Text = "Generation parameters"
         '
+        'Label5
+        '
+        Me.Label5.AutoSize = True
+        Me.Label5.Location = New System.Drawing.Point(262, 59)
+        Me.Label5.Name = "Label5"
+        Me.Label5.Size = New System.Drawing.Size(58, 13)
+        Me.Label5.TabIndex = 10
+        Me.Label5.Text = "Language:"
+        '
+        'cmbLanguage
+        '
+        Me.cmbLanguage.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.cmbLanguage.FormattingEnabled = True
+        Me.cmbLanguage.Location = New System.Drawing.Point(358, 56)
+        Me.cmbLanguage.Name = "cmbLanguage"
+        Me.cmbLanguage.Size = New System.Drawing.Size(163, 21)
+        Me.cmbLanguage.TabIndex = 9
+        '
         'numMinLongestWordLength
         '
-        Me.numMinLongestWordLength.Location = New System.Drawing.Point(458, 90)
+        Me.numMinLongestWordLength.Location = New System.Drawing.Point(415, 90)
         Me.numMinLongestWordLength.Maximum = New Decimal(New Integer() {15, 0, 0, 0})
         Me.numMinLongestWordLength.Minimum = New Decimal(New Integer() {1, 0, 0, 0})
         Me.numMinLongestWordLength.Name = "numMinLongestWordLength"
-        Me.numMinLongestWordLength.Size = New System.Drawing.Size(64, 20)
+        Me.numMinLongestWordLength.Size = New System.Drawing.Size(47, 20)
         Me.numMinLongestWordLength.TabIndex = 8
         Me.numMinLongestWordLength.Value = New Decimal(New Integer() {5, 0, 0, 0})
         '
         'Label4
         '
         Me.Label4.AutoSize = True
-        Me.Label4.Location = New System.Drawing.Point(305, 92)
+        Me.Label4.Location = New System.Drawing.Point(262, 92)
         Me.Label4.Name = "Label4"
         Me.Label4.Size = New System.Drawing.Size(143, 13)
         Me.Label4.TabIndex = 7
@@ -174,23 +197,24 @@ Partial Class GameGenerator
         Me.prg.TabIndex = 3
         Me.prg.Visible = False
         '
-        'cmbLanguage
+        'numMinWordTimes
         '
-        Me.cmbLanguage.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
-        Me.cmbLanguage.FormattingEnabled = True
-        Me.cmbLanguage.Location = New System.Drawing.Point(401, 56)
-        Me.cmbLanguage.Name = "cmbLanguage"
-        Me.cmbLanguage.Size = New System.Drawing.Size(121, 21)
-        Me.cmbLanguage.TabIndex = 9
+        Me.numMinWordTimes.Location = New System.Drawing.Point(486, 90)
+        Me.numMinWordTimes.Maximum = New Decimal(New Integer() {15, 0, 0, 0})
+        Me.numMinWordTimes.Minimum = New Decimal(New Integer() {1, 0, 0, 0})
+        Me.numMinWordTimes.Name = "numMinWordTimes"
+        Me.numMinWordTimes.Size = New System.Drawing.Size(35, 20)
+        Me.numMinWordTimes.TabIndex = 11
+        Me.numMinWordTimes.Value = New Decimal(New Integer() {1, 0, 0, 0})
         '
-        'Label5
+        'Label6
         '
-        Me.Label5.AutoSize = True
-        Me.Label5.Location = New System.Drawing.Point(305, 59)
-        Me.Label5.Name = "Label5"
-        Me.Label5.Size = New System.Drawing.Size(58, 13)
-        Me.Label5.TabIndex = 10
-        Me.Label5.Text = "Language:"
+        Me.Label6.AutoSize = True
+        Me.Label6.Location = New System.Drawing.Point(468, 93)
+        Me.Label6.Name = "Label6"
+        Me.Label6.Size = New System.Drawing.Size(12, 13)
+        Me.Label6.TabIndex = 12
+        Me.Label6.Text = "x"
         '
         'GameGenerator
         '
@@ -211,6 +235,7 @@ Partial Class GameGenerator
         CType(Me.numMinLongestWordLength, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.numWordThreshold, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.numGames, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.numMinWordTimes, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
@@ -231,4 +256,6 @@ Partial Class GameGenerator
     Friend WithEvents Label4 As Label
     Friend WithEvents Label5 As Label
     Friend WithEvents cmbLanguage As ComboBox
+    Friend WithEvents Label6 As Label
+    Friend WithEvents numMinWordTimes As NumericUpDown
 End Class

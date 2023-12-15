@@ -14,12 +14,17 @@ Public Class SolverDictionary
             _fromReplace = "άέήίϊΐόύϋΰώΆΈΉΊΌΎΏς"
             _toReplace = "αεηιιιουυυωαεηιουωσ"
             _consonnants = "ΒΓΔΖΘΚΛΜΝΞΠΡΣΤΦΧΨ"
-        Else
-            language = "en"
+        ElseIf language.ToLower = "en" Then
             _alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
             _fromReplace = ""
             _toReplace = ""
             _consonnants = "BCDFGHJKLMNPQRSTVWXZ"
+        Else 'language="sp"
+            _alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            _fromReplace = "áéóíñÁÉÓÍÑÚú"
+            _toReplace = "aeoinAEOINUU"
+            _consonnants = "BCDFGHJKLMNPQRSTVWXZ"
+
         End If
         ReDim _words(_alphabet.Length)
 
@@ -31,7 +36,7 @@ Public Class SolverDictionary
 
         Dim n As Integer = 0
         For Each s As String In entries
-            If s.Length >= 3 And s.Length <= 10 Then
+            If s.Length >= 3 And s.Length <= 10 And Not s.Contains("-") And Not s.Contains("‒́") And Not s.Contains("(") Then
                 n += 1
                 s = SanitizeWord(s)
                 Dim letterIndex = InStr(_alphabet, s.Substring(0, 1)) - 1
@@ -43,9 +48,9 @@ Public Class SolverDictionary
                 'Debug.WriteLine(s & " not allowed (length is " & s.Length & ")")
             End If
         Next
-        For i As Integer = 0 To 23
-            System.Diagnostics.Debug.WriteLine(_alphabet(i) & ": " & _words(i).Count & " words")
-        Next
+        'For i As Integer = 0 To 23
+        '    System.Diagnostics.Debug.WriteLine(_alphabet(i) & ": " & _words(i).Count & " words")
+        'Next
     End Sub
 
     Public Function IsConsonnant(s As String) As Boolean
@@ -79,4 +84,17 @@ Public Class SolverDictionary
         Return ret
     End Function
 
+    Public Function GetRandomWord(minLength As String, maxLength As String) As String
+        Dim r As New Random
+        Dim ret As String = ""
+        While ret = "" Or (ret.Length < minLength Or ret.Length > maxLength)
+            Dim l As Integer = r.Next(_words.Length)
+            Try
+                If (_words(l).Count > 0) Then ret = _words(l)(r.Next(_words(l).Count))
+            Catch ex As Exception
+                Dim s As String = ex.Message
+            End Try
+        End While
+        Return ret
+    End Function
 End Class

@@ -64,7 +64,13 @@ Public Class GameGenerator
         Dim minimumWords As Integer = numWordThreshold.Value
         Dim minimumLongestWordLength As Integer = numMinLongestWordLength.Value
         Dim language As String
-        If cmbLanguage.SelectedIndex = 0 Then language = "gr" Else language = "en"
+        If cmbLanguage.SelectedIndex = 0 Then
+            language = "gr"
+        ElseIf cmbLanguage.SelectedIndex = 1 Then
+            language = "en"
+        Else
+            language = "sp"
+        End If
         prg.Visible = True
         btnGenerate.Enabled = False
         prg.Minimum = 0
@@ -73,11 +79,12 @@ Public Class GameGenerator
         My.Settings.GameOutputPath = txtOutputPath.Text
         Randomize()
         Dim dict As New SolverDictionary(language)
+        If dict.NumberOfWords = 0 Then txtOut.Text = "No words in dictionary - terminating process" : Return
         Dim gamesCreated As Integer = 0
         txtOut.Text = "Generating " & numGames.Value & " games..." & vbCrLf
         Dim levels As New List(Of Level)
         While gamesCreated < numberOfGames
-            Dim b As Board = Await GenerateGame(minimumWords, minimumLongestWordLength, dict, language)
+            Dim b As Board = Await GenerateGame(minimumWords, minimumLongestWordLength, dict, language, numMinWordTimes.Value)
             If b Is Nothing Then
                 txtOut.Text &= "Game below word threshold - retrying..." & vbCrLf
             Else
@@ -178,7 +185,50 @@ Public Class GameGenerator
     Private Function IsConsonnant(s As String) As Boolean
         Return "ΒΓΔΖΘΚΛΜΝΞΠΡΣΤΦΧΨ".Contains(s)
     End Function
-    Private Async Function GenerateGame(minimumWords As Integer, minimumLongestWordLength As Integer, dict As SolverDictionary, language As String) As Task(Of Board)
+
+    Private Function CreateInitialBoard(dict As SolverDictionary, minWordLength As Integer, maxWordLength As Integer, letters As String) As String
+        Dim brd As New List(Of String)
+        For i As Integer = 0 To 15
+            brd.Add("_")
+        Next
+        Dim wrd As String = ""
+        wrd = dict.GetRandomWord(minWordLength, maxWordLength)
+        Dim r As New Random
+        Dim pos As Integer = r.Next(16) + 1
+        Dim wi As Integer = 0
+        While (wi < wrd.Length - 1)
+TryCombinations:
+            brd(pos - 1) = wrd(wi)
+            Dim neighbors As List(Of Integer) = GetNeighbors(pos)
+            Dim nextPos As Integer = -1
+            Dim tries As Integer = 0
+            Do
+                If nextPos <> -1 AndAlso brd(nextPos - 1) = "_" Then
+                    wi += 1
+                    pos = nextPos
+                    Exit Do
+                Else
+                    nextPos = neighbors(r.Next(neighbors.Count)) + 1
+                    tries += 1
+                    If tries > 15 Then
+                        'If wi > 0 Then wi -= 1
+                        brd(pos - 1) = "_"
+                        GoTo TryCombinations
+                    End If
+                End If
+            Loop
+
+        End While
+        For i As Integer = 0 To brd.Count - 1
+            If brd(i) = "_" Then
+                Dim idx As Integer = CInt(Rnd() * (letters.Length - 1))
+                brd(i) = letters.Substring(idx, 1)
+            End If
+        Next
+        Return String.Join("", brd)
+    End Function
+
+    Private Async Function GenerateGame(minimumWords As Integer, minimumLongestWordLength As Integer, dict As SolverDictionary, language As String, timesMinimumLongestWord As Integer) As Task(Of Board)
         Dim ret As Board = Nothing
         Dim boardSetup As String = ""
         Dim letters As String
@@ -190,6 +240,13 @@ Public Class GameGenerator
 
         Dim isOk As Boolean = False
         Do While Not isOk
+            'boardSetup = CreateInitialBoard(dict, minimumLongestWordLength, 8, letters)
+            'different approach:
+            'add one big word first and then fill in the rest
+            'pick word: ΕΛΑΣΣΩΝ
+            'place: EA__ Λ_ΣΣ ΝΩ__ ____
+            '   pick random pos, add letter > add next to one random neighbor with no value > if no neighbors with no value exist, restart
+            'replace _ with random letters
             boardSetup = ""
             For i As Integer = 0 To 15
                 Dim idx As Integer = CInt(Rnd() * (letters.Length - 1))
@@ -223,11 +280,16 @@ Public Class GameGenerator
                        End Sub)
 
         Dim longestWordLength As Integer = 0
+        Dim longestWordCounter As Integer = 0
         For Each s As String In slv.WordsFound
             If s.Length > longestWordLength Then longestWordLength = s.Length
         Next
 
-        If slv.WordsFound.Count > minimumWords And longestWordLength >= minimumLongestWordLength Then
+        For Each s As String In slv.WordsFound
+            If s.Length >= minimumLongestWordLength Then longestWordCounter += 1
+        Next
+
+        If slv.WordsFound.Count > minimumWords And longestWordLength >= minimumLongestWordLength And longestWordCounter >= timesMinimumLongestWord Then
             slv.WordsFound.Sort()
             ret = New Board
             Dim c As Integer = 0
@@ -257,6 +319,7 @@ Public Class GameGenerator
         txtOutputPath.Text = My.Settings.GameOutputPath
         cmbLanguage.Items.Add("Greek")
         cmbLanguage.Items.Add("English")
+        cmbLanguage.Items.Add("Spanish")
         cmbLanguage.SelectedIndex = 0
     End Sub
 End Class
