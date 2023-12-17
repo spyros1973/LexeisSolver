@@ -53,6 +53,15 @@ Public Class GameGenerator
             Dim d As New JavaScriptSerializer
             Return d.Serialize(Me)
         End Function
+        Public Shared Function FromJson(json) As Board
+            Dim d As New JavaScriptSerializer
+            Try
+                Return d.Deserialize(Of Board)(json)
+            Catch ex As Exception
+                Return Nothing
+            End Try
+
+        End Function
     End Class
 
     Private Async Sub Generate_Click(sender As Object, e As EventArgs) Handles btnGenerate.Click
@@ -77,6 +86,7 @@ Public Class GameGenerator
         prg.Maximum = numberOfGames
         prg.Value = 0
         My.Settings.GameOutputPath = txtOutputPath.Text
+        My.Settings.Language = cmbLanguage.Text
         Randomize()
         Dim dict As New SolverDictionary(language)
         If dict.NumberOfWords = 0 Then txtOut.Text = "No words in dictionary - terminating process" : Return
@@ -84,7 +94,7 @@ Public Class GameGenerator
         txtOut.Text = "Generating " & numGames.Value & " games..." & vbCrLf
         Dim levels As New List(Of Level)
         While gamesCreated < numberOfGames
-            Dim b As Board = Await GenerateGame(minimumWords, minimumLongestWordLength, dict, language, numMinWordTimes.Value)
+            Dim b As Board = Await GenerateGame(minimumWords, minimumLongestWordLength, dict, language, numMinWordTimes.Value, chkRequireVowerNeighbors.Checked)
             If b Is Nothing Then
                 txtOut.Text &= "Game below word threshold - retrying..." & vbCrLf
             Else
@@ -110,7 +120,7 @@ Public Class GameGenerator
         Return x.Points < y.Points
     End Function
 
-    Private Function GetNeighbors(pos As Integer) As List(Of Integer)
+    Private Function GetNeighbors(pos As Integer) As List(Of Integer) 'should be changed to allow other board sizes
         Dim valid As New List(Of Integer)
         Select Case pos
             Case 1
@@ -228,14 +238,40 @@ TryCombinations:
         Return String.Join("", brd)
     End Function
 
-    Private Async Function GenerateGame(minimumWords As Integer, minimumLongestWordLength As Integer, dict As SolverDictionary, language As String, timesMinimumLongestWord As Integer) As Task(Of Board)
+    Private Sub AppendToSolutionLog(lang As String, brd As Board)
+        Dim fw As System.IO.StreamWriter
+        fw = My.Computer.FileSystem.OpenTextFileWriter(IO.Path.Combine(Application.StartupPath, $"solution-{lang}.txt"), True)
+        fw.WriteLine(brd.ToJson)
+        fw.Close()
+    End Sub
+
+    Private Function GetSolutionFromLog(lang As String, letters As String) As Board
+        Dim ret As Board = Nothing
+        Dim filename As String = IO.Path.Combine(Application.StartupPath, $"solution-{lang}.txt")
+        If Not IO.File.Exists(filename) Then Return Nothing
+        Dim fileReader As System.IO.StreamReader
+        fileReader = My.Computer.FileSystem.OpenTextFileReader(filename, System.Text.Encoding.UTF8)
+        Do While Not fileReader.EndOfStream
+            Dim s As String = fileReader.ReadLine()
+            If s.Contains(""" & letters & """) Then
+                ret = Board.FromJson(s)
+                Exit Do
+            End If
+        Loop
+        fileReader.Close()
+        Return ret
+    End Function
+
+    Private Async Function GenerateGame(minimumWords As Integer, minimumLongestWordLength As Integer, dict As SolverDictionary, language As String, timesMinimumLongestWord As Integer, requireVowelNeighbors As Boolean) As Task(Of Board)
         Dim ret As Board = Nothing
         Dim boardSetup As String = ""
         Dim letters As String
         If language = "gr" Then
             letters = "ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩΑΕΣΚΠΟΑΕ"
+        ElseIf language = "en" Then
+            letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZAEDMFTHS"
         Else
-            letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZAEDMFTH"
+            letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
         End If
 
         Dim isOk As Boolean = False
@@ -252,58 +288,65 @@ TryCombinations:
                 Dim idx As Integer = CInt(Rnd() * (letters.Length - 1))
                 boardSetup &= letters.Substring(idx, 1)
             Next
-            'boardSetup = "ΜΛΚΚΡΝΞΕΚΓΣΚΔΡΑΒ"
             isOk = True
-            For i As Integer = 0 To 15
-                'if consonnant, make sure that at least some neighbors are vowels
-                If dict.IsConsonnant(boardSetup.Substring(i, 1)) Then
-                    Dim cc As Integer = 0
-                    Dim ttt As List(Of Integer) = GetNeighbors(i + 1)
-                    For Each neighbor As String In GetNeighbors(i + 1)
-                        If dict.IsConsonnant(boardSetup.Substring(neighbor, 1)) Then cc += 1
-                    Next
-                    If Not (cc < GetNeighbors(i).Count / 2) Then
-                        isOk = False
-                        Exit For
+            If requireVowelNeighbors Then
+                For i As Integer = 0 To 15
+                    'if consonnant, make sure that at least some neighbors are vowels
+                    If dict.IsConsonnant(boardSetup.Substring(i, 1)) Then
+                        Dim cc As Integer = 0
+                        Dim ttt As List(Of Integer) = GetNeighbors(i + 1)
+                        For Each neighbor As String In GetNeighbors(i + 1)
+                            If dict.IsConsonnant(boardSetup.Substring(neighbor, 1)) Then cc += 1
+                        Next
+                        If Not (cc < GetNeighbors(i).Count / 2) Then
+                            isOk = False
+                            Exit For
+                        End If
                     End If
-                End If
-            Next
-        Loop
-        'boardSetup = "ΨΣΠΔΔΘΟΥΥΠΝΠΠΒΠΒ"
-        'boardSetup = "ΨΔΥΠΣΘΠΒΠΟΝΠΔΥΠΒ"
-        Dim slv As New Solver(boardSetup, dict)
-        slv.MinimumLength = 3
-        slv.MaximumLength = 8
-
-        Await Task.Run(Sub()
-                           slv.Solve()
-                       End Sub)
-
-        Dim longestWordLength As Integer = 0
-        Dim longestWordCounter As Integer = 0
-        For Each s As String In slv.WordsFound
-            If s.Length > longestWordLength Then longestWordLength = s.Length
-        Next
-
-        For Each s As String In slv.WordsFound
-            If s.Length >= minimumLongestWordLength Then longestWordCounter += 1
-        Next
-
-        If slv.WordsFound.Count > minimumWords And longestWordLength >= minimumLongestWordLength And longestWordCounter >= timesMinimumLongestWord Then
-            slv.WordsFound.Sort()
-            ret = New Board
-            Dim c As Integer = 0
-            For i As Integer = 0 To 3
-                Dim row As New List(Of String)
-                For n As Integer = 0 To 3
-                    row.Add(boardSetup.Substring(c, 1))
-                    c += 1
                 Next
-                ret.Board.Add(row)
-            Next
+            End If
+        Loop
+
+        'check if in solution log, otherwise solve
+        ret = GetSolutionFromLog(language, boardSetup)
+        If ret Is Nothing Then
+            Dim slv As New Solver(boardSetup, dict)
+            slv.MinimumLength = 3
+            slv.MaximumLength = 8
+
+            Await Task.Run(Sub()
+                               slv.Solve()
+                           End Sub)
+
+            Dim longestWordLength As Integer = 0
+            Dim longestWordCounter As Integer = 0
             For Each s As String In slv.WordsFound
-                ret.Words.Add(s)
+                If s.Length > longestWordLength Then longestWordLength = s.Length
             Next
+
+            For Each s As String In slv.WordsFound
+                If s.Length >= minimumLongestWordLength Then longestWordCounter += 1
+            Next
+            'write in solution file
+
+            If slv.WordsFound.Count > minimumWords And longestWordLength >= minimumLongestWordLength And longestWordCounter >= timesMinimumLongestWord Then
+                slv.WordsFound.Sort()
+                ret = New Board
+                Dim c As Integer = 0
+                For i As Integer = 0 To 3
+                    Dim row As New List(Of String)
+                    For n As Integer = 0 To 3
+                        row.Add(boardSetup.Substring(c, 1))
+                        c += 1
+                    Next
+                    ret.Board.Add(row)
+                Next
+                For Each s As String In slv.WordsFound
+                    ret.Words.Add(s)
+                Next
+                AppendToSolutionLog(language, ret)
+            End If
+
         End If
         Return ret
     End Function
@@ -320,6 +363,7 @@ TryCombinations:
         cmbLanguage.Items.Add("Greek")
         cmbLanguage.Items.Add("English")
         cmbLanguage.Items.Add("Spanish")
-        cmbLanguage.SelectedIndex = 0
+        cmbLanguage.Text = My.Settings.Language
+        If cmbLanguage.Text = "" Then cmbLanguage.SelectedIndex = 0
     End Sub
 End Class
