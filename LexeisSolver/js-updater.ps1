@@ -2,14 +2,34 @@
 #extract for each the letters
 #execute solver
 #update line
-$OutputEncoding = [Console]::InputEncoding = [Console]::OutputEncoding =
-                    New-Object System.Text.UTF8Encoding
 
+<#
+param(
+[string]$solverPath,
+[string]$lang
+)
 
-$levelsPath="<fill-in here>"
-$outPath="<fill-in here>"
-$output="var levels_gr=[]`n"
+if ($lang==null) {
+	write-host "Please provide the lang param (en|gr|es)"
+return
+}
+
+if ($solverPath==null) {
+	Write-Host "Please provide the solverPath param (path to solver CLI executable)"
+	return
+}
+#>
+
+$OutputEncoding = [Console]::InputEncoding = [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding
+
+$solverPath="c:\Users\spara\source\repos\LexeisSolver\SolverCLI\bin\Debug\SolverCLI.exe"
+$lang="gr"
+$levelsPath="c:\Users\spara\Desktop\pod\gr\3\levels.txt"
+$outPath="c:\Users\spara\Desktop\pod\gr\3\levels.txt1"
+$output="var daily_levels_$($lang)=[]`n"
 $lines=Get-Content $levelsPath -Encoding UTF8 
+
+
 
 $pattern = '"BoardSetup":"([^"]+)"'
 Write-Host "Loading..."
@@ -24,12 +44,14 @@ foreach ($row in $lines) {
         $points=$obj.Points
         Write-Host("Level: $counter Words: $wordCount Points:$points")
         if ($obj.BoardSetup -ne $null) {
-
-            $newWords = c:\Users\parasp\source\repos\LexeisSolver\SolverCLI\bin\Debug\SolverCLI.exe -l gr -s $obj.BoardSetup -v
-            $obj.Words=$newWords
-            Write-Host("New words count: $($newWords.Length)")
+            #if ($obj.Words.Contains("ΗΧΟ")) {
+			    $newWords = & $solverPath -l $lang -s $obj.BoardSetup -v
+                #$newWords = c:\Users\parasp\source\repos\LexeisSolver\SolverCLI\bin\Debug\SolverCLI.exe -l gr -s $obj.BoardSetup -v
+                $obj.Words=$newWords
+                Write-Host("New words count: $($newWords.Length)")
+            #}
             $outJson=$obj | ConvertTo-Json -Compress
-            $modifiedRow = "levels.push($outJson);`n"
+            $modifiedRow = "levels_$($lang).push($outJson);`n"
             $output += "$modifiedRow"
             write-output $output | out-file  -encoding utf8 $outPath 
         }

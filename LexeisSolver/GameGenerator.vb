@@ -94,7 +94,7 @@ Public Class GameGenerator
         txtOut.Text = "Generating " & numGames.Value & " games..." & vbCrLf
         Dim levels As New List(Of Level)
         While gamesCreated < numberOfGames
-            Dim b As Board = Await GenerateGame(minimumWords, minimumLongestWordLength, dict, language, numMinWordTimes.Value, chkRequireVowerNeighbors.Checked)
+            Dim b As Board = Await GenerateGame(minimumWords, minimumLongestWordLength, dict, language, numMinWordTimes.Value, chkRequireVowelNeighbors.Checked)
             If b Is Nothing Then
                 txtOut.Text &= "Game below word threshold - retrying..." & vbCrLf
             Else
@@ -197,17 +197,28 @@ Public Class GameGenerator
     End Function
 
     Private Function CreateInitialBoard(dict As SolverDictionary, minWordLength As Integer, maxWordLength As Integer, letters As String) As String
+        'different approach:
+        'add one big word first and then fill in the rest
+        'pick word: ΕΛΑΣΣΩΝ
+        'place: EA__ Λ_ΣΣ ΝΩ__ ____
+        '   pick random pos, add letter > add next to one random neighbor with no value > if no neighbors with no value exist, restart
+        'replace _ with random letters
+
         Dim brd As New List(Of String)
         For i As Integer = 0 To 15
             brd.Add("_")
         Next
         Dim wrd As String = ""
+TryCombinations:
+        brd = New List(Of String)
+        For i As Integer = 0 To 15
+            brd.Add("_")
+        Next
         wrd = dict.GetRandomWord(minWordLength, maxWordLength)
         Dim r As New Random
         Dim pos As Integer = r.Next(16) + 1
         Dim wi As Integer = 0
         While (wi < wrd.Length - 1)
-TryCombinations:
             brd(pos - 1) = wrd(wi)
             Dim neighbors As List(Of Integer) = GetNeighbors(pos)
             Dim nextPos As Integer = -1
@@ -267,7 +278,7 @@ TryCombinations:
         Dim boardSetup As String = ""
         Dim letters As String
         If language = "gr" Then
-            letters = "ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩΑΕΣΚΠΟΑΕ"
+            letters = "ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩΑΕΣΚΠΟΑΕΙ"
         ElseIf language = "en" Then
             letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZAEDMFTHS"
         Else
@@ -276,18 +287,13 @@ TryCombinations:
 
         Dim isOk As Boolean = False
         Do While Not isOk
-            'boardSetup = CreateInitialBoard(dict, minimumLongestWordLength, 8, letters)
-            'different approach:
-            'add one big word first and then fill in the rest
-            'pick word: ΕΛΑΣΣΩΝ
-            'place: EA__ Λ_ΣΣ ΝΩ__ ____
-            '   pick random pos, add letter > add next to one random neighbor with no value > if no neighbors with no value exist, restart
-            'replace _ with random letters
-            boardSetup = ""
-            For i As Integer = 0 To 15
-                Dim idx As Integer = CInt(Rnd() * (letters.Length - 1))
-                boardSetup &= letters.Substring(idx, 1)
-            Next
+            boardSetup = CreateInitialBoard(dict, minimumLongestWordLength, 8, letters)
+
+            'boardSetup = ""
+            'For i As Integer = 0 To 15
+            '    Dim idx As Integer = CInt(Rnd() * (letters.Length - 1))
+            '    boardSetup &= letters.Substring(idx, 1)
+            'Next
             isOk = True
             If requireVowelNeighbors Then
                 For i As Integer = 0 To 15
