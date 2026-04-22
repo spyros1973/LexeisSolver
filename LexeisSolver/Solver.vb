@@ -1,6 +1,6 @@
-﻿Public Class Solver
+Public Class Solver
     Dim _board As String
-    Dim _wordsFound As New ArrayList
+    Dim _wordsFound As New HashSet(Of String)
     Dim _dictionary As SolverDictionary
     Dim _minLength As Integer = 3
     Dim _maxLength As Integer = 10
@@ -28,10 +28,24 @@
         End Set
     End Property
 
-    Private Function ValidMoves(route As ArrayList) As ArrayList
-        Dim current As Integer = route.Item(route.Count - 1)
+    Private Function ValidMoves(visited As HashSet(Of Integer)) As ArrayList
+        Dim current As Integer
+        For Each pos In visited
+            current = pos
+        Next
+        Dim valid As ArrayList = GetNeighbors(current)
+        Dim result As New ArrayList
+        For Each pos As Integer In valid
+            If Not visited.Contains(pos) Then
+                result.Add(pos)
+            End If
+        Next
+        Return result
+    End Function
+
+    Private Function GetNeighbors(pos As Integer) As ArrayList
         Dim valid As New ArrayList
-        Select Case current
+        Select Case pos
             Case 1
                 valid.Add(2)
                 valid.Add(5)
@@ -95,23 +109,15 @@
             Case 16
                 valid.AddRange({11, 12, 15})
         End Select
-        For Each i As Integer In route
-            If valid.Contains(i) Then
-                valid.Remove(i)
-            End If
-        Next
         Return valid
     End Function
 
-    Private Sub CheckRoute(currentRoute As ArrayList)
+    Private Sub CheckRoute(currentRoute As ArrayList, visited As HashSet(Of Integer))
         Dim word As String = ""
-        'System.Diagnostics.Debug.WriteLine(writeRoute(currentRoute))
 
         If currentRoute.Count > _maxLength Then
             Return
         End If
-
-        'if no hope - return
 
         For n As Integer = 0 To currentRoute.Count - 1
             word &= _board.Substring(currentRoute.Item(n) - 1, 1)
@@ -121,16 +127,17 @@
             _wordsFound.Add(word)
         End If
 
-
         If Not _dictionary.ContainsWordsThatStartWith(word) Then Exit Sub
 
-        Dim moves As ArrayList = ValidMoves(currentRoute)
-
+        Dim moves As ArrayList = ValidMoves(visited)
 
         Do While moves.Count > 0
             If currentRoute.Count < _maxLength Then
-                currentRoute.Add(moves.Item(0))
-                CheckRoute(currentRoute)
+                Dim nextMove As Integer = CInt(moves.Item(0))
+                currentRoute.Add(nextMove)
+                visited.Add(nextMove)
+                CheckRoute(currentRoute, visited)
+                visited.Remove(nextMove)
                 currentRoute.RemoveAt(currentRoute.Count - 1)
             End If
             moves.RemoveAt(0)
@@ -150,13 +157,19 @@
         For i As Integer = 1 To 16
             Dim r As New ArrayList
             r.Add(i)
-            CheckRoute(r)
+            Dim visited As New HashSet(Of Integer)
+            visited.Add(i)
+            CheckRoute(r, visited)
         Next
     End Sub
 
     Public ReadOnly Property WordsFound As ArrayList
         Get
-            Return _wordsFound
+            Dim result As New ArrayList
+            For Each word As String In _wordsFound
+                result.Add(word)
+            Next
+            Return result
         End Get
     End Property
 End Class

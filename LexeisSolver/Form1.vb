@@ -1,4 +1,4 @@
-﻿Public Class Form1
+Public Class Form1
     Dim _dict As SolverDictionary
 
     Private Sub btnQuickEnter_Click(sender As Object, e As EventArgs) Handles btnQuickEnter.Click
@@ -94,47 +94,50 @@
 
     Private Sub SortWordList(mode As Integer)
         lstWordsFound.BeginUpdate()
-        If (lstWordsFound.Items.Count > 1) Then
+        Try
+            If (lstWordsFound.Items.Count > 1) Then
 
-            Dim swapped As Boolean
+                Dim swapped As Boolean
 
-            Do
-                Dim counter As Integer = lstWordsFound.Items.Count - 1
-                swapped = False
-                While (counter > 0)
+                Do
+                    Dim counter As Integer = lstWordsFound.Items.Count - 1
+                    swapped = False
+                    While (counter > 0)
 
-                    If mode = 0 Then 'long-short
-                        ' Compare the items' length. 
-                        If lstWordsFound.Items(counter).ToString.Length > _
-                           lstWordsFound.Items(counter - 1).ToString.Length Then
+                        If mode = 0 Then 'long-short
+                            ' Compare the items' length. 
+                            If lstWordsFound.Items(counter).ToString.Length > _
+                               lstWordsFound.Items(counter - 1).ToString.Length Then
 
-                            ' If true, swap the items. 
-                            Dim temp As Object = lstWordsFound.Items(counter)
-                            lstWordsFound.Items(counter) = lstWordsFound.Items(counter - 1)
-                            lstWordsFound.Items(counter - 1) = temp
-                            swapped = True
+                                ' If true, swap the items. 
+                                Dim temp As Object = lstWordsFound.Items(counter)
+                                lstWordsFound.Items(counter) = lstWordsFound.Items(counter - 1)
+                                lstWordsFound.Items(counter - 1) = temp
+                                swapped = True
+
+                            End If
+                        Else
+                            'compare alhabetically
+                            If lstWordsFound.Items(counter).ToString < _
+                               lstWordsFound.Items(counter - 1).ToString Then
+
+                                ' If true, swap the items. 
+                                Dim temp As Object = lstWordsFound.Items(counter)
+                                lstWordsFound.Items(counter) = lstWordsFound.Items(counter - 1)
+                                lstWordsFound.Items(counter - 1) = temp
+                                swapped = True
+
+                            End If
 
                         End If
-                    Else
-                        'compare alhabetically
-                        If lstWordsFound.Items(counter).ToString < _
-                           lstWordsFound.Items(counter - 1).ToString Then
-
-                            ' If true, swap the items. 
-                            Dim temp As Object = lstWordsFound.Items(counter)
-                            lstWordsFound.Items(counter) = lstWordsFound.Items(counter - 1)
-                            lstWordsFound.Items(counter - 1) = temp
-                            swapped = True
-
-                        End If
-
-                    End If
-                    ' Decrement the counter.
-                    counter -= 1
-                End While
-            Loop While (swapped = True)
+                        ' Decrement the counter.
+                        counter -= 1
+                    End While
+                Loop While (swapped = True)
+            End If
+        Finally
             lstWordsFound.EndUpdate()
-        End If
+        End Try
     End Sub
 
     Private Sub txtQuick_KeyDown(sender As Object, e As KeyEventArgs) Handles txtQuick.KeyDown

@@ -1,11 +1,44 @@
 ﻿Imports System.IO
 
+Public Class TrieNode
+    Public Children As New Dictionary(Of Char, TrieNode)
+    Public IsEndOfWord As Boolean = False
+End Class
+
+Public Class Trie
+    Private _root As New TrieNode
+
+    Public Sub Insert(word As String)
+        Dim node As TrieNode = _root
+        For Each c As Char In word
+            If Not node.Children.ContainsKey(c) Then
+                node.Children(c) = New TrieNode()
+            End If
+            node = node.Children(c)
+        Next
+        node.IsEndOfWord = True
+    End Sub
+
+    Public Function StartsWithPrefix(prefix As String) As Boolean
+        Dim node As TrieNode = _root
+        For Each c As Char In prefix
+            If Not node.Children.ContainsKey(c) Then
+                Return False
+            End If
+            node = node.Children(c)
+        Next
+        Return True
+    End Function
+End Class
+
 Public Class SolverDictionary
-    Private _words() As List(Of String)
+    Private _words() As HashSet(Of String)
+    Private _trieByLetter() As Trie
     Private _alphabet() As Char = "ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ"
     Private _fromReplace() As Char = "άέήίϊΐόύϋΰώΆΈΉΊΌΎΏς"
     Private _consonnants As String = ""
     Private _toReplace() As Char = "αεηιιιουυυωαεηιουωσ"
+    Private _allWords As List(Of String)
 
     Public Sub New(language As String)
 
@@ -27,36 +60,41 @@ Public Class SolverDictionary
 
         End If
         ReDim _words(_alphabet.Length)
+        ReDim _trieByLetter(_alphabet.Length)
+        _allWords = New List(Of String)
 
-        For i As Integer = 0 To _words.Length - 1 : _words(i) = New List(Of String) : Next
-        Dim cnt As Integer = 0
+        For i As Integer = 0 To _words.Length - 1
+            _words(i) = New HashSet(Of String)
+            _trieByLetter(i) = New Trie()
+        Next
+
         Dim path As String = IO.Path.Combine(Application.StartupPath, $"dict-{language}.txt")
         If Not IO.File.Exists(path) Then Exit Sub
         Dim entries As String() = File.ReadAllLines(path)
 
-        Dim n As Integer = 0
         For Each s As String In entries
             If s.Length >= 3 And s.Length <= 10 And Not s.Contains("-") And Not s.Contains("‒́") And Not s.Contains("(") Then
-                n += 1
                 s = SanitizeWord(s)
-                Dim letterIndex = InStr(_alphabet, s.Substring(0, 1)) - 1
-                'If _words(letterIndex).Count < 5000 Then
+                Dim letterIndex = GetLetterIndex(s.Substring(0, 1))
                 _words(letterIndex).Add(s)
-                'cnt += 1
-                'End If
-            Else
-                'Debug.WriteLine(s & " not allowed (length is " & s.Length & ")")
+                _allWords.Add(s)
             End If
         Next
-        'For i As Integer = 0 To 23
-        '    System.Diagnostics.Debug.WriteLine(_alphabet(i) & ": " & _words(i).Count & " words")
-        'Next
+
+        For i As Integer = 0 To _alphabet.Length - 1
+            For Each word As String In _words(i)
+                _trieByLetter(i).Insert(word)
+            Next
+        Next
     End Sub
+
+    Private Function GetLetterIndex(letter As String) As Integer
+        Return InStr(_alphabet, letter.Substring(0, 1)) - 1
+    End Function
 
     Public Function IsConsonnant(s As String) As Boolean
         Return _consonnants.Contains(s)
     End Function
-
 
     Private Function SanitizeWord(txt As String) As String
         For i As Integer = 0 To _fromReplace.Length - 1
@@ -66,34 +104,25 @@ Public Class SolverDictionary
     End Function
 
     Public Function ContainsWord(txt As String) As Boolean
-        Dim letterIndex = InStr(_alphabet, txt.Substring(0, 1)) - 1
+        Dim letterIndex = GetLetterIndex(txt)
         Return _words(letterIndex).Contains(txt.ToUpper)
     End Function
 
     Public Function ContainsWordsThatStartWith(txt As String) As Boolean
-        Dim letterIndex = InStr(_alphabet, txt.Substring(0, 1)) - 1
-        Dim s As String = txt
-        Return _words(letterIndex).Find(Function(x) x.StartsWith(txt)) <> ""
+        Dim letterIndex = GetLetterIndex(txt)
+        Return _trieByLetter(letterIndex).StartsWithPrefix(txt.ToUpper)
     End Function
 
     Public Function NumberOfWords() As Integer
-        Dim ret As Integer = 0
-        For i As Integer = 0 To _words.Length - 1
-            ret += _words(i).Count
-        Next
-        Return ret
+        Return _allWords.Count
     End Function
 
-    Public Function GetRandomWord(minLength As String, maxLength As String) As String
+    Public Function GetRandomWord(minLength As Integer, maxLength As Integer) As String
         Dim r As New Random
         Dim ret As String = ""
-        While ret = "" Or (ret.Length < minLength Or ret.Length > maxLength)
-            Dim l As Integer = r.Next(_words.Length)
-            Try
-                If (_words(l).Count > 0) Then ret = _words(l)(r.Next(_words(l).Count))
-            Catch ex As Exception
-                Dim s As String = ex.Message
-            End Try
+        Dim filtered As List(Of String) = Nothing
+        While ret = "" Or ret.Length < minLength Or ret.Length > maxLength
+            ret = _allWords(r.Next(_allWords.Count))
         End While
         Return ret
     End Function
